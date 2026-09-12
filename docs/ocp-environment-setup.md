@@ -231,9 +231,23 @@ is supplied per-stage via the task's `namespace` input.
 - [x] `dev` (`ado-pipeline`) — service account, RBAC, token, kubeconfig,
       service connection, and Deploy stage all complete and verified
       (1 pod running).
-- [ ] `stg` (`pipeline-stg`) — namespace and service account created;
-      RBAC/token/kubeconfig/service connection/environment pending.
-- [ ] `prod` (`pipeline-prod`) — namespace and service account created;
-      RBAC/token/kubeconfig/service connection/environment pending
-      (RBAC step intentionally requires manual execution, not automation,
-      per Step 2's production note).
+- [x] `stg` (`pipeline-stg`) — service account, RBAC, token, kubeconfig,
+      ADO environment with approval, service connection, and DeployStg
+      stage all complete and verified (1 pod running, 2026-09-12).
+- [x] `prod` (`pipeline-prod`) — service account, RBAC, token, kubeconfig,
+      ADO environment with approval, service connection, and DeployProd
+      stage all complete and verified (1 pod running, 2026-09-12).
+
+All three stages (`Deploy` → `DeployStg` → `DeployProd`) have run
+end-to-end successfully in a single pipeline execution, with manual
+approval gates pausing correctly before `DeployStg` and `DeployProd`.
+
+Quick verification for any environment:
+```bash
+oc get pods -n <ado-pipeline|pipeline-stg|pipeline-prod>
+```
+Note: `oc get all` / `oc get pods` with no `-n` flag uses whatever
+namespace your current kubeconfig context defaults to (it changes each
+time you run `oc config use-context` while building a new environment's
+kubeconfig) — always pass `-n <namespace>` explicitly to avoid confusion
+about which environment you're actually looking at.

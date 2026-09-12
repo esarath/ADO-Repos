@@ -11,4 +11,6 @@ Base repo indexing multiple Azure DevOps (ADO) pipeline/project examples. Each s
 
 ## Docs
 
-- [OCP environment setup runbook](./docs/ocp-environment-setup.md) — step-by-step for wiring dev/stg/prod deploy stages to lab.ocp.local namespaces with manual approval gates
+- [HLD](./docs/HLD.md) — architecture overview and design decisions (diagrams, trust model, best practices)
+- [LLD](./docs/LLD.md) — full command reference, grouped by concern, for repeating the pattern on a new project/environment
+- [OCP environment setup runbook](./docs/ocp-environment-setup.md) — step-by-step walkthrough for wiring dev/stg/prod deploy stages to lab.ocp.local namespaces with manual approval gates
