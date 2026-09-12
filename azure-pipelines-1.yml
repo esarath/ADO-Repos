@@ -5,7 +5,7 @@
 # Replaces the original ASP.NET (.NET Framework) template: VSBuild/VSTest
 # require a .sln file, but pipeline-dotNet is an ASP.NET Core project with
 # only a .csproj, so 'Solution not found using search pattern **/*.sln' failed.
-
+#re0run this pipeline
 trigger:
 - main
 
