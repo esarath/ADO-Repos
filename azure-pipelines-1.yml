@@ -1,34 +1,52 @@
-# ASP.NET
-# Build and test ASP.NET projects.
-# Add steps that publish symbols, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+# ASP.NET Core (.NET 6)
+# Build and publish the pipeline-dotNet ASP.NET Core project.
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+#
+# Replaces the original ASP.NET (.NET Framework) template: VSBuild/VSTest
+# require a .sln file, but pipeline-dotNet is an ASP.NET Core project with
+# only a .csproj, so 'Solution not found using search pattern **/*.sln' failed.
 
 trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  projectPath: 'pipeline-dotNet/pipelines-dotnet-core.csproj'
 
 steps:
-- task: NuGetToolInstaller@1
-
-- task: NuGetCommand@2
+- task: UseDotNet@2
   inputs:
-    restoreSolution: '$(solution)'
+    packageType: 'sdk'
+    version: '6.0.x'
+  displayName: 'Install .NET 6 SDK'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'restore'
+    projects: '$(projectPath)'
+  displayName: 'Restore'
 
-- task: VSTest@2
+- task: DotNetCoreCLI@2
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    command: 'build'
+    projects: '$(projectPath)'
+    arguments: '--configuration $(buildConfiguration) --no-restore'
+  displayName: 'Build'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    projects: '$(projectPath)'
+    arguments: '--configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+  displayName: 'Publish'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+  displayName: 'Publish artifact'
