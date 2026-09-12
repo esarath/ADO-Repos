@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pipeline-dotnet
-  namespace: ado-pipeline
   labels:
     app: pipeline-dotnet
 spec:

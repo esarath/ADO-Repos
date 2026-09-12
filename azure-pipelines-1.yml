@@ -78,3 +78,47 @@ stages:
               namespace: '$(targetNamespace)'
               manifests: '$(Pipeline.Workspace)/manifests/*.yaml'
               containers: '$(imageRepo):$(imageTag)'
+
+- stage: DeployStg
+  displayName: 'Deploy to pipeline-stg (stg)'
+  dependsOn: Deploy
+  condition: succeeded()
+  jobs:
+  - deployment: DeployToOcp
+    environment: 'stg'
+    pool:
+      name: 'lab-ocp-agents'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@1
+            inputs:
+              action: 'deploy'
+              connectionType: 'kubernetesServiceConnection'
+              kubernetesServiceConnection: 'ocp-lab-pipeline-stg'
+              namespace: 'pipeline-stg'
+              manifests: '$(Pipeline.Workspace)/manifests/*.yaml'
+              containers: '$(imageRepo):$(imageTag)'
+
+- stage: DeployProd
+  displayName: 'Deploy to pipeline-prod (prod)'
+  dependsOn: DeployStg
+  condition: succeeded()
+  jobs:
+  - deployment: DeployToOcp
+    environment: 'prod'
+    pool:
+      name: 'lab-ocp-agents'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: KubernetesManifest@1
+            inputs:
+              action: 'deploy'
+              connectionType: 'kubernetesServiceConnection'
+              kubernetesServiceConnection: 'ocp-lab-pipeline-prod'
+              namespace: 'pipeline-prod'
+              manifests: '$(Pipeline.Workspace)/manifests/*.yaml'
+              containers: '$(imageRepo):$(imageTag)'
