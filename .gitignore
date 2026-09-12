@@ -1,0 +1,16 @@
+# Never commit cluster/registry credentials
+*.kubeconfig
+*-ca.crt
+*.token
+*.pem
+*.key
+users.htpasswd
+.env
+.env.*
+
+# .NET build output
+bin/
+obj/
+
+# Node
+node_modules/
