@@ -14,8 +14,8 @@ the values in the table.
 | Env  | Namespace       | Service Account | Kubeconfig file (on svc-infra)                  | ADO Service Connection      | ADO Environment | Approval required |
 |------|-----------------|------------------|--------------------------------------------------|------------------------------|------------------|--------------------|
 | dev  | `ado-pipeline`  | `ado-deployer`   | `~/scratchpad/ado-deployer.kubeconfig` *(see note)* | `ocp-lab-ado-pipeline-dev`   | `dev`            | No                 |
-| stg  | `pipeline-stg`  | `ado-deployer`   | `~/POCs/pipeline/ado-secrets/ado-deployer-pipeline-stg.kubeconfig`  | `ocp-lab-pipeline-stg`       | `stg`            | Yes                |
-| prod | `pipeline-prod` | `ado-deployer`   | `~/POCs/pipeline/ado-secrets/ado-deployer-pipeline-prod.kubeconfig` | `ocp-lab-pipeline-prod`      | `prod`           | Yes (stricter)     |
+| stg  | `pipeline-stg`  | `ado-deployer`   | `$HOME/POCs/pipeline/ado-secrets/ado-deployer-pipeline-stg.kubeconfig`  | `ocp-lab-pipeline-stg`       | `stg`            | Yes                |
+| prod | `pipeline-prod` | `ado-deployer`   | `$HOME/POCs/pipeline/ado-secrets/ado-deployer-pipeline-prod.kubeconfig` | `ocp-lab-pipeline-prod`      | `prod`           | Yes (stricter)     |
 
 > Note: the `dev` kubeconfig was originally written to a session-scoped
 > scratchpad path that no longer exists. If you need to regenerate it,
@@ -77,15 +77,15 @@ double check `NS` before hitting enter.
 
 ```bash
 NS=<namespace>
-mkdir -p ~/POCs/pipeline/ado-secrets && chmod 700 ~/POCs/pipeline/ado-secrets
+mkdir -p $HOME/POCs/pipeline/ado-secrets && chmod 700 $HOME/POCs/pipeline/ado-secrets
 
 TOKEN=$(oc get secret ado-deployer-token -n "$NS" -o jsonpath='{.data.token}' | base64 -d)
-oc get secret ado-deployer-token -n "$NS" -o jsonpath='{.data.ca\.crt}' | base64 -d > ~/POCs/pipeline/ado-secrets/ado-deployer-${NS}-ca.crt
+oc get secret ado-deployer-token -n "$NS" -o jsonpath='{.data.ca\.crt}' | base64 -d > $HOME/POCs/pipeline/ado-secrets/ado-deployer-${NS}-ca.crt
 
-KCFG=~/POCs/pipeline/ado-secrets/ado-deployer-${NS}.kubeconfig
+KCFG=$HOME/POCs/pipeline/ado-secrets/ado-deployer-${NS}.kubeconfig
 KUBECONFIG="$KCFG" oc config set-cluster lab-ocp-local \
   --server=https://api.lab.ocp.local:6443 \
-  --certificate-authority=~/POCs/pipeline/ado-secrets/ado-deployer-${NS}-ca.crt \
+  --certificate-authority=$HOME/POCs/pipeline/ado-secrets/ado-deployer-${NS}-ca.crt \
   --embed-certs=true
 
 KUBECONFIG="$KCFG" oc config set-credentials ado-deployer --token="$TOKEN"
@@ -101,7 +101,7 @@ KUBECONFIG="$KCFG" oc whoami
 ```
 
 A ready-to-run version of this loop (for stg + prod together) is at
-`~/POCs/pipeline/ado-secrets/build-kubeconfigs.sh` on svc-infra.
+`$HOME/POCs/pipeline/ado-secrets/build-kubeconfigs.sh` on svc-infra.
 
 ## Step 4 — Create the ADO Environment with approval gates (portal)
 
@@ -122,7 +122,7 @@ it run automatically after a successful Build.
    connection → Kubernetes**.
 2. Authentication method: **Kubeconfig**.
 3. Paste the full contents of the kubeconfig file from Step 3
-   (`cat ~/POCs/pipeline/ado-secrets/ado-deployer-<namespace>.kubeconfig`).
+   (`cat $HOME/POCs/pipeline/ado-secrets/ado-deployer-<namespace>.kubeconfig`).
 4. Cluster context: `ado-deployer-ctx`. Namespace: `<namespace>`.
 5. **Uncheck "Verify connection"** — Azure DevOps' cloud backend cannot
    resolve `api.lab.ocp.local` or reach the `192.168.29.0/24` range, so
@@ -194,7 +194,7 @@ is supplied per-stage via the task's `namespace` input.
   connection — compromising one does not expose the others.
 - **Credentials never committed to git.** This repo's `.gitignore` blocks
   `*.kubeconfig`, `*-ca.crt`, `*.token`, `*.pem`, `*.key`, and
-  `users.htpasswd`. Kubeconfigs live only in `~/POCs/pipeline/ado-secrets` (`chmod 700`
+  `users.htpasswd`. Kubeconfigs live only in `$HOME/POCs/pipeline/ado-secrets` (`chmod 700`
   dir, `chmod 600` files) on svc-infra, and are pasted directly into the
   ADO service connection UI — never stored in the repo or in plain chat.
 - **Manual approval gates on stg and prod**, none on dev — see Step 4.
